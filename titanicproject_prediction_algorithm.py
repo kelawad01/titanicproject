@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np 
 import matplotlib.pyplot as plt
 from sklearn import tree, model_selection
-from sklearn import svm
 from sklearn.ensemble import RandomForestClassifier
 
 import utils
@@ -11,12 +10,13 @@ import utils
 traindf = pd.read_csv("train.csv")
 utils.clean_data(traindf)
 
-
 testdf = pd.read_csv("test.csv")
 utils.clean_data(testdf)
 
 target = traindf["Survived"].values
-features = traindf[["Pclass", "Sex", "Age", "SibSp", "Parch", "Fare", "Embarked"]].values
+features = traindf[
+    ["Pclass", "Sex", "Age", "SibSp", "Parch", "Fare", "Embarked", "Title"]
+    ].values
 
 decision_tree = tree.DecisionTreeClassifier(
     random_state = 1
@@ -24,32 +24,38 @@ decision_tree = tree.DecisionTreeClassifier(
 
 decision_tree_fit = decision_tree.fit(features, target)
 
-scores = model_selection.cross_val_score(
+scores_tree = model_selection.cross_val_score(
     decision_tree, 
     features, 
     target, 
     scoring = "accuracy",
-    cv = 50)
+    cv = 50
+    )
 
-# kfold = model_selection.KFold(
-#     n_splits=10, 
-#     shuffle = True, 
-#     random_state = 0
-#     )
+print(scores_tree)
+print(scores_tree.mean())
 
-print(scores)
-print(scores.mean())
+ran_forest = RandomForestClassifier(
+    n_estimators = 10, 
+    criterion = "entropy", 
+    random_state = 0
+    )
 
-# clf = tree.DecisionTreeClassifier(
-#     random_state = 1
-#     )
+ran_forest.fit(features, target)
 
-# clf_fit = clf.fit(features, target)
-# clf_predict = clf.predict(testdf)
+scores_forest = model_selection.cross_val_score(
+    ran_forest,
+    features,
+    target,
+    scoring = "accuracy",
+    cv = 50
+)
 
-# predictions = pd.DataFrame({
-#     "PassengerId": test["PassengerId"],
-#     "Survived": clf_predict
-# })
+print(scores_forest)
+print(scores_forest.mean())
 
-# predictions.head()
+importances = ran_forest.feature_importances_
+
+print(importances)
+ran_forest_rank = np.argsort(importances)[::-1]
+print(ran_forest_rank)
