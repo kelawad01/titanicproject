@@ -5,8 +5,34 @@
 # This function changes categorical "Sex" and "Embarked" features into dummy numerics.
 
 def clean_data(data):
-    data["Fare"] = data ["Fare"].fillna(data["Fare"].dropna().median())
-    data["Age"] = data["Age"].fillna(data["Age"].dropna().median())
+    data.drop(["Cabin"], axis = 1, inplace = True)
+    data["Title"] = data["Name"].str.extract(' ([A-Za-z]+)\.', expand = False)
+
+    title_mapping = {
+        "Mr":0,
+        "Miss":1,
+        "Mrs":2,
+        "Master":3,
+        "Dr":4,
+        "Rev":5,
+        "Col":6,
+        "Mlle":7,
+        "Major":8,
+        "Ms":9,
+        "Countess":10,
+        "Mme":11,
+        "Capt":12,
+        "Don":13,
+        "Lady":14,
+        "Sir":15,
+        "Jonkheer":16
+    }
+
+    data["Title"] = data["Title"].map(title_mapping)
+    
+    data.drop(["Name"], axis = 1, inplace = True)
+    
+    data["Age"].fillna(data.groupby("Title")["Age"].transform("median"), inplace = True)
 
     data.loc[data["Sex"] == "male", "Sex"] = 0
     data.loc[data["Sex"] == "female", "Sex"] = 1
@@ -15,5 +41,3 @@ def clean_data(data):
     data.loc[data["Embarked"] == "S", "Embarked"] = 0
     data.loc[data["Embarked"] == "C", "Embarked"] = 1
     data.loc[data["Embarked"] == "Q", "Embarked"] = 2
-
-def transpose_matrix(data)
