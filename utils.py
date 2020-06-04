@@ -25,15 +25,18 @@ def clean_data(data):
         "Don":13,
         "Lady":14,
         "Sir":15,
-        "Jonkheer":16
+        "Jonkheer":16,
+        "Dona":17
     }
 
     data["Title"] = data["Title"].map(title_mapping)
     
     data.drop(["Name"], axis = 1, inplace = True)
     
-    data["Age"].fillna(data.groupby("Title")["Age"].transform("median"), inplace = True)
-
+    # data["Age"].fillna(data.groupby("Title")["Age"].transform("median"), inplace = True)
+    
+    data["Age"] = data["Age"].fillna(data["Age"].dropna().median())
+    data["Fare"] = data["Fare"].fillna(data["Fare"].dropna().median())
     data.loc[data["Sex"] == "male", "Sex"] = 0
     data.loc[data["Sex"] == "female", "Sex"] = 1
 

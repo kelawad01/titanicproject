@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn import tree, model_selection
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import confusion_matrix
 
 import utils
 
@@ -13,8 +14,12 @@ utils.clean_data(traindf)
 testdf = pd.read_csv("test.csv")
 utils.clean_data(testdf)
 
-target = traindf["Survived"].values
-features = traindf[
+target_train = traindf["Survived"].values
+features_train = traindf[
+    ["Pclass", "Sex", "Age", "SibSp", "Parch", "Fare", "Embarked", "Title"]
+    ].values
+
+features_test = testdf[
     ["Pclass", "Sex", "Age", "SibSp", "Parch", "Fare", "Embarked", "Title"]
     ].values
 
@@ -22,40 +27,43 @@ decision_tree = tree.DecisionTreeClassifier(
     random_state = 1
     )
 
-decision_tree_fit = decision_tree.fit(features, target)
+decision_tree_fit = decision_tree.fit(features_train, target_train)
 
 scores_tree = model_selection.cross_val_score(
     decision_tree, 
-    features, 
-    target, 
+    features_train, 
+    target_train, 
     scoring = "accuracy",
     cv = 50
     )
 
 print(scores_tree)
-print(scores_tree.mean())
+print("Decision Tree Training Accuracy: ", scores_tree.mean())
 
-ran_forest = RandomForestClassifier(
+rf = RandomForestClassifier(
     n_estimators = 10, 
     criterion = "entropy", 
     random_state = 0
     )
 
-ran_forest.fit(features, target)
+rf_fit = rf.fit(features_train, target_train)
 
 scores_forest = model_selection.cross_val_score(
-    ran_forest,
-    features,
-    target,
+    rf,
+    features_train,
+    target_train,
     scoring = "accuracy",
     cv = 50
 )
 
 print(scores_forest)
-print(scores_forest.mean())
+print("Random Forest Training Accuracy: ", scores_forest.mean())
 
-importances = ran_forest.feature_importances_
+importances = rf.feature_importances_
 
 print(importances)
-ran_forest_rank = np.argsort(importances)[::-1]
-print(ran_forest_rank)
+rf_rank = np.argsort(importances)[::-1]
+print(rf_rank)
+
+tree_predict = decision_tree.predict(features_test)
+rf_predict = rf.predict(features_test)
